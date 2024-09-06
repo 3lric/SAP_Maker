@@ -7,20 +7,31 @@ from PIL import Image, ImageTk
 import webbrowser
 from sap_headers import get_sap_headers  # Import headers
 from sap_files import get_sap_files      # Import files
+import sys
 
+# Function to ensure the proper path for the icon, whether during development or after PyInstaller bundling
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class SAPConverterApp:
     def __init__(self, root):
         self.root = root
         self.root.title("SAP Maker v0.2b")
         self.root.geometry("408x358")
-        self.root.resizable(False, False)
+        self.root.resizable(False, False)  # Main window is not resizable
 
-        # Update icon
-        self.root.iconbitmap('SM_Icon.ico')
+        # Update icon using resource_path to locate it correctly
+        self.root.iconbitmap(resource_path('SM_Icon.ico'))  # Using .ico with transparency
 
         # Path to background image
-        bg_image_path = "logo.png"  # Ensure this path is correct
+        bg_image_path = resource_path("logo.png")  # Ensure this path is correct
         self.set_background(bg_image_path)
 
         # SAP headers
@@ -36,14 +47,14 @@ class SAPConverterApp:
 
         # Buttons
         self.extract_button = tk.Button(
-            root, text="Extract WAV from SAP", command=self.extract_wav, bg="#333", fg="#ff8080", font=("Helvetica", 10, "bold")
+            root, text="Extract WAVs from SAP", command=self.extract_wav, bg="#333", fg="#ff8080", font=("Helvetica", 10, "bold")
         )
-        self.extract_button.place(x=125, y=40)  # Move to top center
+        self.extract_button.place(x=123, y=40)  # Move to top center
 
         self.create_button = tk.Button(
-            root, text="Create SAP from WAV", command=self.create_sap, bg="#333", fg="#ff8080", font=("Helvetica", 10, "bold"), state="disabled"
+            root, text="Create SAP from WAVs", command=self.create_sap, bg="#333", fg="#ff8080", font=("Helvetica", 10, "bold"), state="disabled"
         )
-        self.create_button.place(x=125, y=203)  # Bottom center, disabled initially
+        self.create_button.place(x=123, y=203)  # Bottom center, disabled initially
 
         # Bind event to check if button should be enabled
         self.game_dropdown.trace("w", self.update_ui)
@@ -108,12 +119,18 @@ class SAPConverterApp:
         else:
             self.category_menu.place_forget()
 
+        # Enable or disable 3rd dropdown based on category
         if category_selected and self.category_dropdown.get() not in ["Voice/Music", "Footstep", "Custom"]:
             self.file_menu.place(x=130, y=285)
             self.populate_file_menu()
         else:
             self.file_menu.place_forget()
 
+        # Enable 'Create SAP from WAVs' button if category doesn't need 3rd dropdown
+        if self.category_dropdown.get() in ["Voice/Music", "Footstep", "Custom"]:
+            self.create_button.config(state="normal")
+
+        # Show warning window if "Custom" is selected
         if self.category_dropdown.get() == "Custom":
             self.show_custom_warning()
 
@@ -148,8 +165,8 @@ class SAPConverterApp:
                 output_path = os.path.join(output_dir, f"extracted_{i+1}.wav")
                 with open(output_path, 'wb') as wav_file:
                     wav_file.write(wav_data)
-        print(f"Extracted {len(riff_chunks)} WAV files to {output_dir}")
-        messagebox.showinfo("Success", "WAV files successfully extracted!", icon='info')
+        extracted_count = len(riff_chunks)
+        messagebox.showinfo("Success", f"{extracted_count} WAV files successfully extracted!", icon='info')
 
     def create_sap(self):
         wav_files = filedialog.askopenfilenames(title="Select WAV files", filetypes=[("WAV files", "*.wav")])
@@ -167,8 +184,17 @@ class SAPConverterApp:
             for wav_file in wav_files:
                 with open(wav_file, 'rb') as wf:
                     sap_file.write(wf.read())
+        
+        # Determine the appropriate message for the success popup
+        category = self.category_dropdown.get()
+        if category in ["Voice/Music", "Footstep", "Custom"]:
+            message = f"{category} SAP successfully created!"
+        else:
+            sap_file_name = self.file_dropdown.get()  # Name of the selected SAP file
+            message = f"SAP '{sap_file_name}' successfully rebuilt!"
+        
         print(f"Created new SAP file at {sap_file_path}")
-        messagebox.showinfo("Success", "SAP file successfully created!", icon='info')
+        messagebox.showinfo("Success", message, icon='info')
 
     def get_sap_header(self, category):
         if category == "Voice/Music":
@@ -186,14 +212,15 @@ class SAPConverterApp:
                                             "1. Select a game.\n"
                                             "2. Choose the appropriate SAP category.\n"
                                             "3. For most categories, select a specific SAP file.\n"
-                                            "4. Use 'Extract WAV from SAP' to extract audio files or 'Create SAP from WAV' to create new SAP files.\n\n"
+                                            "4. Use 'Extract WAVs from SAP' to extract audio files or 'Create SAP from WAVs' to create new SAP files.\n\n"
                                             "Categories like 'Voice/Music', 'Footstep', and 'Custom' automatically generate the SAP header.")
 
     def show_about(self):
         about_window = tk.Toplevel(self.root)
         about_window.title("About SAP Maker")
         about_window.geometry("350x250")
-        about_window.iconbitmap('SM_Icon.ico')
+        about_window.resizable(False, False)  # Disable resizing for About window
+        about_window.iconbitmap(resource_path('SM_Icon.ico'))  # Use .ico file for transparency
 
         about_text = tk.Label(about_window, text="SAP Maker v0.2b\nCreated by 3lric", font=("Helvetica", 10, "bold"))
         about_text.pack(pady=10)
@@ -212,29 +239,32 @@ class SAPConverterApp:
         crem_discord_label.bind("<Button-1>", lambda e: webbrowser.open_new("https://discord.gg/tR29MU5aCS"))
 
     def show_custom_warning(self):
+        # Warning window with adjusted size
         warning_window = tk.Toplevel(self.root)
         warning_window.title("Custom SAP Warning")
-        warning_window.geometry("300x200")
+        warning_window.geometry("400x220")  # Adjusted size to fit the button properly
+        warning_window.resizable(False, False)  # Disable resizing for warning window
+        warning_window.iconbitmap(resource_path('SM_Icon.ico'))
 
-        # Set custom icon and background
-        warning_window.iconbitmap('SM_Icon.ico')
-        image = Image.open("warning.png")
-        image = image.resize((300, 200))
-        self.warning_bg = ImageTk.PhotoImage(image)
-        warning_label = tk.Label(warning_window, image=self.warning_bg)
-        warning_label.place(x=0, y=0, relwidth=1, relheight=1)
+        # Warning text
+        warning_label = tk.Label(
+            warning_window, 
+            text=("This option should only be used if you know what you're doing.\n\n"
+                  "You need to edit the EXE/SLUS or EDT/EDH file accordingly for it to "
+                  "work properly with more or less sounds or in a different order than "
+                  "originally intended.\n\n"
+                  "Custom SAPs will be output with a generic 8-byte header that will also "
+                  "need to be edited accordingly."),
+            fg="black", 
+            wraplength=380, 
+            justify="left", 
+            font=("Helvetica", 10)
+        )
+        warning_label.pack(pady=20, padx=10)
 
-        warning_text = tk.Label(warning_window, text="This option should only be used if you know what you are doing.\n\n"
-                                                     "You need to edit the EXE/SLUS or EDT/EDH file accordingly for "
-                                                     "it to work properly with more or less sounds or in a different "
-                                                     "order than originally intended.\n\n"
-                                                     "Custom SAPs will be output with a generic 8-byte header that will "
-                                                     "also need to be edited accordingly.", fg="red", bg="black",
-                                wraplength=280, font=("Helvetica", 9, "bold"))
-        warning_text.place(x=10, y=20)
-
+        # 'I Understand' button
         close_button = tk.Button(warning_window, text="I Understand", command=warning_window.destroy)
-        close_button.place(x=120, y=160)
+        close_button.pack(pady=10)
 
 
 if __name__ == "__main__":
