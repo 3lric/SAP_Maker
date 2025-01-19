@@ -23,7 +23,7 @@ def resource_path(relative_path):
 class SAPConverterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("SAP Maker v0.2b")
+        self.root.title("SAP Maker v0.3b")
         self.root.geometry("408x358")
         self.root.resizable(False, False)  # Main window is not resizable
 
@@ -222,7 +222,7 @@ class SAPConverterApp:
         about_window.resizable(False, False)  # Disable resizing for About window
         about_window.iconbitmap(resource_path('SM_Icon.ico'))  # Use .ico file for transparency
 
-        about_text = tk.Label(about_window, text="SAP Maker v0.2b\nCreated by 3lric", font=("Helvetica", 10, "bold"))
+        about_text = tk.Label(about_window, text="SAP Maker v0.3b\nCreated by 3lric", font=("Helvetica", 10, "bold"))
         about_text.pack(pady=10)
 
         # Hyperlink labels

@@ -39,7 +39,15 @@ def get_sap_files(category):
             "room20c.sap", "room20d.sap", "room20e.sap", "room20f.sap", "room210.sap", "room211.sap", "room212.sap",
             "room213.sap", "room214.sap", "room215.sap", "room216.sap", "room219.sap", "room21a.sap", "room21b.sap",
             "room300.sap", "room301.sap", "room302.sap", "room303.sap", "room304.sap", "room305.sap", "room306.sap",
-            "room307.sap", "room308.sap", "room309.sap", "room30a.sap", "room30b.sap", "room30c.sap", "room30d.sap"
+            "room307.sap", "room308.sap", "room309.sap", "room30a.sap", "room30b.sap", "room30c.sap", "room30d.sap",
+            "room400.sap", "room401.sap", "room402.sap", "room403.sap", "room404.sap", "room405.sap", "room407.sap",
+            "room408.sap", "room409.sap", "room40a.sap", "room40b.sap", "room40c.sap", "room40d.sap", "room40e.sap",
+            "room40f.sap", "room410.sap", "room500.sap", "room501.sap", "room502.sap", "room503.sap", "room504.sap",
+            "room505.sap", "room506.sap", "room507.sap", "room508.sap", "room509.sap", "room600.sap", "room601.sap",
+            "room602.sap", "room603.sap", "room604.sap", "room605.sap", "room606.sap", "room607.sap", "room608.sap",
+            "room609.sap", "room60a.sap", "room60b.sap", "room60c.sap", "room60d.sap", "room60e.sap", "room60f.sap",
+            "room610.sap", "room611.sap", "room612.sap", "room613.sap", "room614.sap", "room615.sap", "room616.sap",
+            "room617.sap", "room700.sap", "room701.sap", "room702.sap", "room703.sap", "room704.sap", "room800.sap"
         ]
     elif category == "Weapon":
         return [

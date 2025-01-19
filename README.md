@@ -1,6 +1,6 @@
 # SAP Maker
 
-**Version:** 0.2b  
+**Version:** 0.3b  
 **Author:** 3lric  
 **License:** MIT License  
 
